@@ -1,0 +1,20 @@
+{
+  "name": "MarkXia",
+  "id": "markxia-markdown-widget",
+  "api": "1.0.0",
+  "widgetApi": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "ui.html",
+  "containsWidget": true,
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma",
+    "figjam"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  }
+}
