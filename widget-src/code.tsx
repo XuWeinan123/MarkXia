@@ -38,6 +38,12 @@ const DEFAULT_MARKDOWN = `# Welcome to MarkXia! 🚀
 
 This is a beautiful, light-default **Figma Markdown** widget.
 
+## Typography
+### H3 Heading
+#### H4 Heading
+##### H5 Heading
+###### H6 Heading
+
 ### Features
 - Support formatting like **bold**, *italics*, and \`inline code\`.
 - Render indented **bullet points** dynamically.
@@ -304,7 +310,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
       continue;
     }
 
-    // 3. Headings (# H1, ## H2, ### H3)
+    // 3. Headings (# H1 to ###### H6)
     if (line.startsWith("# ")) {
       pushBlock(
         <Text
@@ -313,6 +319,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           fontFamily={DEFAULT_FONT_FAMILY}
           fontSize={24}
           fontWeight="bold"
+          lineHeight="auto"
           fill={styles.text}
         >
           {parseInlineSpans(line.substring(2), isDark, styles.text)}
@@ -324,8 +331,9 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           key={`h2-${idx}`}
           width="fill-parent"
           fontFamily={DEFAULT_FONT_FAMILY}
-          fontSize={18}
+          fontSize={22}
           fontWeight="bold"
+          lineHeight="auto"
           fill={styles.text}
         >
           {parseInlineSpans(line.substring(3), isDark, styles.text)}
@@ -337,11 +345,54 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           key={`h3-${idx}`}
           width="fill-parent"
           fontFamily={DEFAULT_FONT_FAMILY}
-          fontSize={15}
+          fontSize={20}
           fontWeight="bold"
+          lineHeight="auto"
           fill={styles.text}
         >
           {parseInlineSpans(line.substring(4), isDark, styles.text)}
+        </Text>
+      );
+    } else if (line.startsWith("#### ")) {
+      pushBlock(
+        <Text
+          key={`h4-${idx}`}
+          width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
+          fontSize={18}
+          fontWeight="bold"
+          lineHeight="auto"
+          fill={styles.text}
+        >
+          {parseInlineSpans(line.substring(5), isDark, styles.text)}
+        </Text>
+      );
+    } else if (line.startsWith("##### ")) {
+      pushBlock(
+        <Text
+          key={`h5-${idx}`}
+          width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
+          fontSize={16}
+          fontWeight="bold"
+          lineHeight="auto"
+          fill={styles.text}
+        >
+          {parseInlineSpans(line.substring(6), isDark, styles.text)}
+        </Text>
+      );
+    } else if (line.startsWith("###### ")) {
+      pushBlock(
+        <Text
+          key={`h6-${idx}`}
+          width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
+          fontSize={15}
+          fontWeight="bold"
+          lineHeight="auto"
+          fill={styles.text}
+        >
+          {parseInlineSpans(line.substring(7), isDark, styles.text)}
         </Text>
       );
     }
