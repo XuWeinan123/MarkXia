@@ -38,12 +38,6 @@ const DEFAULT_MARKDOWN = `# Welcome to Markdown Canvas! 🚀
 
 This is a beautiful, light-default **Figma Markdown** widget.
 
-## Typography
-### H3 Heading
-#### H4 Heading
-##### H5 Heading
-###### H6 Heading
-
 ### Features
 - Support formatting like **bold**, *italics*, and \`inline code\`.
 - Render indented **bullet points** dynamically.
