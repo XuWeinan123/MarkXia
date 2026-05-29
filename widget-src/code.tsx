@@ -30,6 +30,9 @@ const THEMES = {
   }
 };
 
+const WIDTH_OPTIONS = [360, 540, 720, 1080] as const;
+type WidgetWidth = typeof WIDTH_OPTIONS[number];
+
 const DEFAULT_MARKDOWN = `# Welcome to MarkXia! 🚀
 
 This is a beautiful, light-default **Figma Markdown** widget.
@@ -441,6 +444,7 @@ function Widget() {
   const [markdown, setMarkdown] = useSyncedState("markdown", DEFAULT_MARKDOWN);
   const [title, setTitle] = useSyncedState("title", "MarkXia Note");
   const [theme, setTheme] = useSyncedState("theme", "light");
+  const [widgetWidth, setWidgetWidth] = useSyncedState("widgetWidth", 540);
 
   const isDark = theme === "dark";
   const styles = THEMES[isDark ? "dark" : "light"];
@@ -463,6 +467,16 @@ function Widget() {
           { label: "🌙 Dark", option: "dark" }
         ],
         selectedOption: theme
+      },
+      {
+        itemType: "dropdown",
+        tooltip: "Widget Width",
+        propertyName: "widgetWidth",
+        options: WIDTH_OPTIONS.map((width) => ({
+          label: `${width}px`,
+          option: String(width)
+        })),
+        selectedOption: String(widgetWidth)
       }
     ],
     (event: any) => {
@@ -485,6 +499,11 @@ function Widget() {
         const val = event.propertyValue;
         if (val === "light" || val === "dark") {
           setTheme(val);
+        }
+      } else if (event.propertyName === "widgetWidth") {
+        const nextWidth = Number(event.propertyValue);
+        if (WIDTH_OPTIONS.includes(nextWidth as WidgetWidth)) {
+          setWidgetWidth(nextWidth);
         }
       }
     }
@@ -524,7 +543,7 @@ function Widget() {
       strokeWidth={1}
       cornerRadius={16}
       spacing={16}
-      width={480}
+      width={widgetWidth}
     >
       {renderMarkdownToFigma(markdown, isDark ? "dark" : "light")}
     </AutoLayout>
