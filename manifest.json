@@ -1,6 +1,6 @@
 {
-  "name": "MarkXia",
-  "id": "markxia-markdown-widget",
+  "name": "Markdown Canvas",
+  "id": "markdown-canvas-widget",
   "api": "1.0.0",
   "widgetApi": "1.0.0",
   "main": "dist/code.js",

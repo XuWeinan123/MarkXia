@@ -1,10 +1,10 @@
 本项目完全通过 vibe coding 完成。
 
-# MarkXia
+# Markdown Canvas
 
 [English](README.md)
 
-MarkXia 是一个 Figma 与 FigJam 小组件，可直接在画布上编写、编辑并渲染 Markdown 笔记。
+Markdown Canvas 是一个 Figma 与 FigJam 小组件，可直接在画布上编写、编辑并渲染 Markdown 笔记。
 
 该小组件使用 Figma 同步状态保存笔记内容，并通过轻量编辑面板进行更新。
 
@@ -20,7 +20,7 @@ MarkXia 是一个 Figma 与 FigJam 小组件，可直接在画布上编写、编
 
 ## 支持的 Markdown 语法
 
-MarkXia 支持在 Figma 画布上原生渲染标准 Markdown 和 GitHub 风格 Markdown (GFM) 的子集：
+Markdown Canvas 支持在 Figma 画布上原生渲染标准 Markdown 和 GitHub 风格 Markdown (GFM) 的子集：
 
 | Markdown 语法特性   | 语法示例                                  | 支持状态 | 备注 / 局限性                                                       |
 | :------------------ | :---------------------------------------- | :------: | :------------------------------------------------------------------ |

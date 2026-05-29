@@ -3,9 +3,9 @@
 declare const figma: PluginAPI;
 declare const __html__: string;
 
-// Simplified MarkXia Markdown Note Widget for Figma & FigJam
-const BUILD_ID = "markxia-widget-2026-05-29-widget-props-fix-1";
-console.log(`[MarkXia] loaded ${BUILD_ID}`);
+// Simplified Markdown Canvas Markdown Note Widget for Figma & FigJam
+const BUILD_ID = "markdown-canvas-widget-2026-05-29-widget-props-fix-1";
+console.log(`[Markdown Canvas] loaded ${BUILD_ID}`);
 
 const THEMES = {
   light: {
@@ -34,7 +34,7 @@ const WIDTH_OPTIONS = [360, 540, 720, 1080] as const;
 type WidgetWidth = typeof WIDTH_OPTIONS[number];
 const DEFAULT_FONT_FAMILY = "Noto Sans SC";
 
-const DEFAULT_MARKDOWN = `# Welcome to MarkXia! 🚀
+const DEFAULT_MARKDOWN = `# Welcome to Markdown Canvas! 🚀
 
 This is a beautiful, light-default **Figma Markdown** widget.
 
@@ -53,7 +53,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
 | Package | Version | Status |
 | --- | --- | --- |
 | Marked | 4.3.0 | Embedded |
-| MarkXia | 1.1.0 | Active |
+| Markdown Canvas | 1.1.0 | Active |
 
 - Showcase blockquotes for highlights:
 > "Design is not just what it looks like and feels like. Design is how it works." — Steve Jobs
@@ -505,7 +505,7 @@ function Widget() {
   const { AutoLayout, useSyncedState, usePropertyMenu, waitForTask } = figma.widget;
 
   const [markdown, setMarkdown] = useSyncedState("markdown", DEFAULT_MARKDOWN);
-  const [title, setTitle] = useSyncedState("title", "MarkXia Note");
+  const [title, setTitle] = useSyncedState("title", "Markdown Canvas Note");
   const [theme, setTheme] = useSyncedState("theme", "light");
   const [widgetWidth, setWidgetWidth] = useSyncedState("widgetWidth", 540);
 

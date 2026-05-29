@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MarkXia Note Editor</title>
+  <title>Markdown Canvas Note Editor</title>
   <style>
     :root {
       --bg-color: #FFFFFF;
@@ -162,12 +162,12 @@
   <script>
     const markdownEditor = document.getElementById('markdownEditor');
     const statsText = document.getElementById('statsText');
-    let currentTitle = 'MarkXia Note';
+    let currentTitle = 'Markdown Canvas Note';
 
     window.onmessage = (event) => {
       const message = event.data.pluginMessage;
       if (message && message.type === 'init-state') {
-        currentTitle = message.title || 'MarkXia Note';
+        currentTitle = message.title || 'Markdown Canvas Note';
         markdownEditor.value = message.markdown || '';
         
         if (message.theme === 'dark') {

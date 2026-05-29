@@ -1,10 +1,10 @@
 This project was completed entirely through vibe coding.
 
-# MarkXia
+# Markdown Canvas
 
 [简体中文](README_CN.md)
 
-MarkXia is a Figma and FigJam widget for writing, editing, and rendering Markdown notes directly on the canvas.
+Markdown Canvas is a Figma and FigJam widget for writing, editing, and rendering Markdown notes directly on the canvas.
 
 The widget keeps its note content in Figma synced state and opens a lightweight editor panel for updates.
 
@@ -20,7 +20,7 @@ It supports light and dark themes from the widget property menu.
 
 ## Supported Markdown Syntax
 
-MarkXia supports a subset of standard Markdown and GitHub Flavored Markdown (GFM) features natively rendered on the Figma canvas:
+Markdown Canvas supports a subset of standard Markdown and GitHub Flavored Markdown (GFM) features natively rendered on the Figma canvas:
 
 | Markdown Feature            | Syntax Example                                     | Support Status | Notes / Limitations                                                                            |
 | :-------------------------- | :------------------------------------------------- | :------------: | :--------------------------------------------------------------------------------------------- |
