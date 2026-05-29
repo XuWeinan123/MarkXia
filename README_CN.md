@@ -2,13 +2,35 @@
 
 # Markdown Canvas
 
-[English](README.md)
+<p align="center">
+  <img src="LOGO.png" alt="Markdown Canvas Logo" width="128" />
+</p>
+
+<p align="center">
+  <strong>一个 Figma 与 FigJam 小组件，可直接在画布上编写、编辑并渲染 Markdown 笔记。</strong>
+</p>
+
+<p align="center">
+  <a href="README.md">English</a>
+</p>
+
+<p align="center">
+  <img src="thumbnail.png" alt="Markdown Canvas Cover" width="100%" style="max-width: 800px; border-radius: 8px;" />
+</p>
+
+---
 
 Markdown Canvas 是一个 Figma 与 FigJam 小组件，可直接在画布上编写、编辑并渲染 Markdown 笔记。
 
 该小组件使用 Figma 同步状态保存笔记内容，并通过轻量编辑面板进行更新。
 
 它支持通过小组件属性菜单切换浅色与深色主题。
+
+### 效果展示
+
+<p align="center">
+  <img src="carousel1.png" alt="Markdown Canvas Showcase" width="100%" style="max-width: 800px; border-radius: 8px;" />
+</p>
 
 ## 功能
 

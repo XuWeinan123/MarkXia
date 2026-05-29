@@ -2,13 +2,35 @@ This project was completed entirely through vibe coding.
 
 # Markdown Canvas
 
-[简体中文](README_CN.md)
+<p align="center">
+  <img src="LOGO.png" alt="Markdown Canvas Logo" width="128" />
+</p>
+
+<p align="center">
+  <strong>A Figma and FigJam widget for writing, editing, and rendering Markdown notes directly on the canvas.</strong>
+</p>
+
+<p align="center">
+  <a href="README_CN.md">简体中文</a>
+</p>
+
+<p align="center">
+  <img src="thumbnail.png" alt="Markdown Canvas Cover" width="100%" style="max-width: 800px; border-radius: 8px;" />
+</p>
+
+---
 
 Markdown Canvas is a Figma and FigJam widget for writing, editing, and rendering Markdown notes directly on the canvas.
 
 The widget keeps its note content in Figma synced state and opens a lightweight editor panel for updates.
 
 It supports light and dark themes from the widget property menu.
+
+### Showcase
+
+<p align="center">
+  <img src="carousel1.png" alt="Markdown Canvas Showcase" width="100%" style="max-width: 800px; border-radius: 8px;" />
+</p>
 
 ## Features
 
