@@ -75,3 +75,7 @@ Markdown Canvas supports a subset of standard Markdown and GitHub Flavored Markd
 | **Keyboard Tags**           | `<kbd>Ctrl</kbd>`                                  |       ❌        | Renders literal HTML tags.                                                                     |
 | **GFM Emojis**              | `:rocket:`                                         |       ❌        | Raw shortcodes are not parsed, but direct Unicode emojis (e.g. `🚀`) are fully supported.       |
 | **Mermaid Diagrams**        | ` ```mermaid `                                     |       ❌        | Renders as raw Mermaid text inside a code block.                                               |
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

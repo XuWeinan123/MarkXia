@@ -75,3 +75,7 @@ Markdown Canvas 支持在 Figma 画布上原生渲染标准 Markdown 和 GitHub 
 | **键盘按键标签**    | `<kbd>Ctrl</kbd>`                         |    ❌     | 会直接渲染出原始 HTML 标签。                                        |
 | **表情符号**        | `:rocket:`                                |    ❌     | 无法解析短代码，但支持直接在文本中输入 Unicode 表情符号（如 `🚀`）。 |
 | **Mermaid 流程图**  | ` ```mermaid `                            |    ❌     | 会被当作普通代码块，直接显示 Mermaid 原始代码文本。                 |
+
+## 开源协议
+
+本项目采用 MIT 开源协议 - 详情请参阅 [LICENSE](LICENSE) 文件。

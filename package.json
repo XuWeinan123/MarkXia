@@ -2,6 +2,7 @@
   "name": "markdown-canvas",
   "version": "1.1.0",
   "description": "Markdown Canvas: Figma Markdown Editor & Viewer Widget",
+  "license": "MIT",
   "main": "dist/code.js",
   "scripts": {
     "build": "esbuild widget-src/code.tsx --bundle --outfile=dist/code.js --target=es2020",
