@@ -12,10 +12,23 @@ It supports light and dark themes from the widget property menu.
 
 ## Features
 
-- Render headings, paragraphs, unordered lists, ordered lists, blockquotes, horizontal rules, code blocks, inline code, bold text, italic text, and simple tables.
-
 - Edit Markdown in a Figma UI panel, then apply changes while keeping the editor open or save and close it.
 
 - Store Markdown, title, and theme through `useSyncedState` so the widget state travels with the Figma file.
 
 - Run without external network access; `manifest.json` sets allowed domains to `none`.
+
+## Supported Markdown Syntax
+
+MarkXia currently supports rendering:
+- Headings
+- Paragraphs
+- Unordered lists
+- Ordered lists
+- Blockquotes
+- Horizontal rules
+- Code blocks
+- Inline code
+- Bold text
+- Italic text
+- Simple tables
