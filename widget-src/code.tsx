@@ -32,6 +32,7 @@ const THEMES = {
 
 const WIDTH_OPTIONS = [360, 540, 720, 1080] as const;
 type WidgetWidth = typeof WIDTH_OPTIONS[number];
+const DEFAULT_FONT_FAMILY = "Noto Sans SC";
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkXia! 🚀
 
@@ -41,6 +42,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
 - Support formatting like **bold**, *italics*, and \`inline code\`.
 - Render indented **bullet points** dynamically.
 - Display custom **tables** natively on the canvas:
+- Use shortcuts in the editor: \`Cmd+S\` to save, \`Cmd+Shift+S\` to apply, \`Cmd+B/I/U\` for text styles, and \`Cmd+K\` for links.
 
 | Package | Version | Status |
 | --- | --- | --- |
@@ -86,7 +88,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
         tokens.push(
           <Span
             key={tokens.length}
-            fontFamily="Inter"
+            fontFamily={DEFAULT_FONT_FAMILY}
             fill={isDark ? "#818CF8" : "#2563EB"}
           >
             {" " + codeText + " "}
@@ -110,6 +112,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
         tokens.push(
           <Span
             key={tokens.length}
+            fontFamily={DEFAULT_FONT_FAMILY}
             fontWeight="bold"
             fill={defaultColor}
           >
@@ -134,6 +137,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
         tokens.push(
           <Span
             key={tokens.length}
+            fontFamily={DEFAULT_FONT_FAMILY}
             italic={true}
             fill={defaultColor}
           >
@@ -198,7 +202,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           >
             <Text
               width="fill-parent"
-              fontFamily="Inter"
+              fontFamily={DEFAULT_FONT_FAMILY}
               fontSize={13}
               fill={isDark ? "#94A3B8" : "#4B5563"}
             >
@@ -272,6 +276,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
                       >
                         <Text
                           width="fill-parent"
+                          fontFamily={DEFAULT_FONT_FAMILY}
                           fontSize={13}
                           fontWeight={isHeader ? "bold" : "normal"}
                           fill={isHeader ? styles.text : styles.muted}
@@ -305,6 +310,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         <Text
           key={`h1-${idx}`}
           width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
           fontSize={24}
           fontWeight="bold"
           fill={styles.text}
@@ -317,6 +323,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         <Text
           key={`h2-${idx}`}
           width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
           fontSize={18}
           fontWeight="bold"
           fill={styles.text}
@@ -329,6 +336,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         <Text
           key={`h3-${idx}`}
           width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
           fontSize={15}
           fontWeight="bold"
           fill={styles.text}
@@ -346,13 +354,13 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           direction="horizontal"
           width="fill-parent"
           fill={styles.quoteBg}
-          stroke={styles.accent}
-          strokeWidth={1}
           padding={{ left: 16, top: 4, bottom: 4, right: 12 }}
         >
           <Text
             width="fill-parent"
+            fontFamily={DEFAULT_FONT_FAMILY}
             fontSize={14}
+            lineHeight={20}
             italic={true}
             fill={styles.muted}
           >
@@ -369,13 +377,14 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           key={`ul-${idx}`}
           direction="horizontal"
           width="fill-parent"
-          padding={{ left: 12 }}
           spacing={8}
         >
-          <Text fontSize={14} fill={styles.accent} fontWeight="bold">•</Text>
+          <Text fontFamily={DEFAULT_FONT_FAMILY} fontSize={14} lineHeight={20} fill={styles.accent} fontWeight="bold" width={16}>•</Text>
           <Text
             width="fill-parent"
+            fontFamily={DEFAULT_FONT_FAMILY}
             fontSize={14}
+            lineHeight={20}
             fill={styles.muted}
           >
             {parseInlineSpans(itemText, isDark, styles.muted)}
@@ -392,13 +401,14 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           key={`ol-${idx}`}
           direction="horizontal"
           width="fill-parent"
-          padding={{ left: 12 }}
           spacing={8}
         >
-          <Text fontSize={14} fill={styles.accent} fontWeight="bold">{listIndex++}.</Text>
+          <Text fontFamily={DEFAULT_FONT_FAMILY} fontSize={14} lineHeight={20} fill={styles.accent} fontWeight="bold" width={16}>{listIndex++}.</Text>
           <Text
             width="fill-parent"
+            fontFamily={DEFAULT_FONT_FAMILY}
             fontSize={14}
+            lineHeight={20}
             fill={styles.muted}
           >
             {parseInlineSpans(itemText, isDark, styles.muted)}
@@ -425,7 +435,9 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         <Text
           key={`p-${idx}`}
           width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
           fontSize={14}
+          lineHeight={20}
           fill={styles.muted}
         >
           {parseInlineSpans(line, isDark, styles.muted)}
@@ -439,7 +451,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
 
 // 2. Widget root component
 function Widget() {
-  const { AutoLayout, useSyncedState, usePropertyMenu, useEffect, waitForTask } = figma.widget;
+  const { AutoLayout, useSyncedState, usePropertyMenu, waitForTask } = figma.widget;
 
   const [markdown, setMarkdown] = useSyncedState("markdown", DEFAULT_MARKDOWN);
   const [title, setTitle] = useSyncedState("title", "MarkXia Note");
@@ -454,7 +466,7 @@ function Widget() {
     [
       {
         itemType: "action",
-        tooltip: "Edit",
+        tooltip: "📝 Edit",
         propertyName: "edit",
         icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12.146 1.854a.5.5 0 0 1 .708 0l1.292 1.292a.5.5 0 0 1 0 .708L13 5.003 10.998 3l1.148-1.146zM10.29 3.71L2 12v2h2l8.29-8.29-2-2z" fill="currentColor"/></svg>`
       },
@@ -488,6 +500,25 @@ function Widget() {
           title: "Edit " + title
         });
 
+        waitForTask(new Promise<void>((resolve) => {
+          (figma as any).ui.onmessage = (msg: any) => {
+            if (msg.type === "save-markdown") {
+              setMarkdown(msg.markdown);
+              setTitle(msg.title);
+
+              // Notify update success
+              (figma as any).notify("Markdown updated on canvas!");
+
+              // Keep the widget running only while the editor stays open for more edits.
+              if (!msg.keepOpen) {
+                (figma as any).ui.onmessage = undefined;
+                (figma as any).closePlugin();
+                resolve();
+              }
+            }
+          };
+        }));
+
         // Send current title & markdown state to Iframe
         (figma as any).ui.postMessage({
           type: "init-state",
@@ -508,31 +539,6 @@ function Widget() {
       }
     }
   );
-
-  useEffect(() => {
-    waitForTask(new Promise<void>((resolve) => {
-      (figma as any).ui.onmessage = (msg: any) => {
-        if (msg.type === "save-markdown") {
-          setMarkdown(msg.markdown);
-          setTitle(msg.title);
-
-          // Notify update success
-          (figma as any).notify("Markdown updated on canvas!");
-
-          // If not marked to keepOpen, close UI
-          if (!msg.keepOpen) {
-            (figma as any).closePlugin();
-          }
-
-          resolve();
-        }
-      };
-    }));
-
-    return () => {
-      (figma as any).ui.onmessage = undefined;
-    };
-  });
 
   return (
     <AutoLayout

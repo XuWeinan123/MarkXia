@@ -68,7 +68,7 @@
       border-radius: 0;
       padding: 0;
       color: var(--text-color);
-      font-family: Inter, Roboto, Arial, sans-serif;
+      font-family: "Noto Sans", Arial, sans-serif;
       font-size: 14px;
       line-height: 20px;
       outline: none;
@@ -183,11 +183,108 @@
     };
 
     markdownEditor.addEventListener('input', updateStats);
+    markdownEditor.addEventListener('keydown', handleEditorShortcut);
 
     function updateStats() {
       const text = markdownEditor.value;
       const words = text.trim().split(/\s+/).filter(w => w.length > 0);
       statsText.textContent = `${text.length} chars, ${words.length} words`;
+    }
+
+    const formattingShortcuts = [
+      {
+        isMatch: (event) => event.metaKey && event.shiftKey && !event.altKey && event.key.toLowerCase() === 's',
+        apply: () => saveMarkdown(true),
+        shouldUpdateStats: false
+      },
+      {
+        isMatch: (event) => event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 's',
+        apply: () => saveMarkdown(false),
+        shouldUpdateStats: false
+      },
+      {
+        isMatch: (event) => event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'b',
+        apply: () => wrapSelection('**', '**', 'strong')
+      },
+      {
+        isMatch: (event) => event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'i',
+        apply: () => wrapSelection('*', '*', 'emphasis')
+      },
+      {
+        isMatch: (event) => event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'u',
+        apply: () => wrapSelection('<u>', '</u>', 'underline')
+      },
+      {
+        isMatch: (event) => event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && event.code === 'Backquote',
+        apply: () => wrapSelection('`', '`', 'code')
+      },
+      {
+        isMatch: (event) => event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'm',
+        apply: () => wrapSelection('$', '$', 'math')
+      },
+      {
+        isMatch: (event) => event.ctrlKey && !event.metaKey && event.shiftKey && !event.altKey && event.code === 'Backquote',
+        apply: () => wrapSelection('~~', '~~', 'strike')
+      },
+      {
+        isMatch: (event) => event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && event.key === '-',
+        apply: () => wrapSelection('<!-- ', ' -->', 'comment')
+      },
+      {
+        isMatch: (event) => event.metaKey && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'k',
+        apply: insertLink
+      }
+    ];
+
+    function handleEditorShortcut(event) {
+      const shortcut = formattingShortcuts.find(item => item.isMatch(event));
+      if (!shortcut) return;
+
+      event.preventDefault();
+      shortcut.apply();
+      if (shortcut.shouldUpdateStats !== false) {
+        updateStats();
+      }
+    }
+
+    function wrapSelection(prefix, suffix, placeholder) {
+      const start = markdownEditor.selectionStart;
+      const end = markdownEditor.selectionEnd;
+      const selectedText = markdownEditor.value.slice(start, end);
+      const innerText = selectedText || placeholder;
+      const replacement = `${prefix}${innerText}${suffix}`;
+
+      replaceEditorRange(start, end, replacement);
+
+      if (selectedText) {
+        markdownEditor.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+      } else {
+        markdownEditor.setSelectionRange(start + prefix.length, start + prefix.length + placeholder.length);
+      }
+    }
+
+    function insertLink() {
+      const start = markdownEditor.selectionStart;
+      const end = markdownEditor.selectionEnd;
+      const selectedText = markdownEditor.value.slice(start, end);
+      const label = selectedText || 'link';
+      const replacement = `[${label}](url)`;
+
+      replaceEditorRange(start, end, replacement);
+
+      if (selectedText) {
+        const urlStart = start + replacement.length - 4;
+        markdownEditor.setSelectionRange(urlStart, urlStart + 3);
+      } else {
+        markdownEditor.setSelectionRange(start + 1, start + 1 + label.length);
+      }
+    }
+
+    function replaceEditorRange(start, end, replacement) {
+      const before = markdownEditor.value.slice(0, start);
+      const after = markdownEditor.value.slice(end);
+      markdownEditor.value = `${before}${replacement}${after}`;
+      markdownEditor.focus();
     }
 
     function saveMarkdown(keepOpen = false) {
