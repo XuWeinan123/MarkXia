@@ -39,7 +39,7 @@ const DEFAULT_MARKDOWN = `# Welcome to Markdown Canvas! 🚀
 This is a beautiful, light-default **Figma Markdown** widget.
 
 ### Features
-- Support formatting like **bold**, *italics*, and \`inline code\`.
+- Support formatting like **bold**, *italics*, ~~strikethrough~~, <u>underline</u>, and \`inline code\`.
 - Render indented **bullet points** dynamically.
 - Display custom **tables** natively on the canvas:
 - Use shortcuts in the editor: \`Cmd+S\` to save, \`Cmd+Shift+S\` to apply, \`Cmd+B/I/U\` for text styles, and \`Cmd+K\` for links.
@@ -73,7 +73,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
 
   while (i < str.length) {
     // Escaped characters check
-    if (str[i] === '\\' && i + 1 < str.length && (str[i + 1] === '`' || str[i + 1] === '*' || str[i + 1] === '_')) {
+    if (str[i] === '\\' && i + 1 < str.length && (str[i + 1] === '`' || str[i + 1] === '*' || str[i + 1] === '_' || str[i + 1] === '~')) {
       currentText += str[i + 1];
       i += 2;
       continue;
@@ -98,6 +98,30 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
       } else {
         currentText += '`';
         i++;
+      }
+      continue;
+    }
+
+    // Underline (<u>...</u>)
+    if (str.substring(i, i + 3).toLowerCase() === '<u>') {
+      pushText();
+      const endIdx = str.toLowerCase().indexOf('</u>', i + 3);
+      if (endIdx !== -1) {
+        const underlineText = str.substring(i + 3, endIdx);
+        tokens.push(
+          <Span
+            key={tokens.length}
+            fontFamily={DEFAULT_FONT_FAMILY}
+            textDecoration="underline"
+            fill={defaultColor}
+          >
+            {underlineText}
+          </Span>
+        );
+        i = endIdx + 4;
+      } else {
+        currentText += '<u>';
+        i += 3;
       }
       continue;
     }
@@ -148,6 +172,31 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
       } else {
         currentText += delimiter;
         i++;
+      }
+      continue;
+    }
+
+    // Strikethrough (~~)
+    if (str[i] === '~' && str[i + 1] === '~') {
+      pushText();
+      const delimiter = "~~";
+      const endIdx = str.indexOf(delimiter, i + 2);
+      if (endIdx !== -1) {
+        const strikeText = str.substring(i + 2, endIdx);
+        tokens.push(
+          <Span
+            key={tokens.length}
+            fontFamily={DEFAULT_FONT_FAMILY}
+            textDecoration="strikethrough"
+            fill={defaultColor}
+          >
+            {strikeText}
+          </Span>
+        );
+        i = endIdx + 2;
+      } else {
+        currentText += delimiter;
+        i += 2;
       }
       continue;
     }

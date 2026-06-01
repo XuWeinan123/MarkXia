@@ -50,8 +50,8 @@ Markdown Canvas supports a subset of standard Markdown and GitHub Flavored Markd
 | **Bold Text**               | `**bold**` or `__bold__`                           |       ✅        | Rendered in bold typeface.                                                                     |
 | **Italic Text**             | `*italic*` or `_italic_`                           |       ✅        | Rendered in italic typeface.                                                                   |
 | **Bold Italic Text**        | `***bold italic***`                                |       ❌        | Will not correctly parse both styles combined.                                                 |
-| **Strikethrough**           | `~~strikethrough~~`                                |       ❌        | Renders as raw `~~` characters.                                                                |
-| **Underline**               | `<u>underline</u>`                                 |       ❌        | Renders literal HTML tags.                                                                     |
+| **Strikethrough**           | `~~strikethrough~~`                                |       ✅        | Rendered with a line through the text.                                                         |
+| **Underline**               | `<u>underline</u>`                                 |       ✅        | Rendered with an underline.                                                                    |
 | **Highlights**              | `==highlight==`                                    |       ❌        | Renders as raw `==` characters.                                                                |
 | **Superscript & Subscript** | `x^2^`, `H~2~O`                                    |       ❌        | Renders as raw `^` or `~` characters.                                                          |
 | **Plain Paragraphs**        | Standard text                                      |       ✅        | Styled in theme-based muted text color.                                                        |
