@@ -225,7 +225,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
         tokens.push(
           <Span
             key={tokens.length}
-            fontFamily={DEFAULT_FONT_FAMILY}
+            fontFamily="Inter"
             italic={true}
             fill={defaultColor}
           >
@@ -398,7 +398,7 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark", on
         >
           <Text
             width="fill-parent"
-            fontFamily={DEFAULT_FONT_FAMILY}
+            fontFamily="Inter"
             fontSize={14}
             lineHeight={20}
             italic={true}

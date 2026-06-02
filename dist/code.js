@@ -212,7 +212,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
               Span,
               {
                 key: tokens.length,
-                fontFamily: DEFAULT_FONT_FAMILY,
+                fontFamily: "Inter",
                 italic: true,
                 fill: defaultColor
               },
@@ -378,7 +378,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
               Text,
               {
                 width: "fill-parent",
-                fontFamily: DEFAULT_FONT_FAMILY,
+                fontFamily: "Inter",
                 fontSize: 14,
                 lineHeight: 20,
                 italic: true,
