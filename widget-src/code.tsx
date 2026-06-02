@@ -14,9 +14,9 @@ const THEMES = {
     text: "#1F2937",
     muted: "#4B5563",
     accent: "#3B82F6",
-    codeBg: "#F3F4F6",
-    quoteBg: "#F9FAFB",
-    tableHeaderBg: "#F3F4F6"
+    codeBg: "#F5FAFF",
+    quoteBg: "#F9F9F9",
+    tableHeaderBg: "#F5FAFF"
   },
   dark: {
     bg: "#0F121C",
@@ -56,6 +56,20 @@ This is a beautiful, light-default **Figma Markdown** widget.
 
 *Select this note to open the edit panel and toggle themes from the bottom-left property menu!*`;
 
+function formatFigmaHyperlink(url: string): string | undefined {
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  let finalUrl = trimmed;
+  if (!/^https?:\/\//i.test(trimmed) && !/^mailto:/i.test(trimmed)) {
+    finalUrl = "https://" + trimmed;
+  }
+  try {
+    return encodeURI(finalUrl);
+  } catch (_e) {
+    return undefined;
+  }
+}
+
 // 1. Inline span parser to support bold, italic, inline code
 function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
   const { Span } = figma.widget;
@@ -77,6 +91,56 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
       currentText += str[i + 1];
       i += 2;
       continue;
+    }
+
+    // Image link check: ![alt](url)
+    if (str[i] === '!' && str[i + 1] === '[') {
+      pushText();
+      const endBracketIdx = str.indexOf(']', i + 2);
+      if (endBracketIdx !== -1 && str[endBracketIdx + 1] === '(') {
+        const endParenIdx = str.indexOf(')', endBracketIdx + 2);
+        if (endParenIdx !== -1) {
+          const altText = str.substring(i + 2, endBracketIdx);
+          const imageUrl = str.substring(endBracketIdx + 2, endParenIdx);
+          tokens.push(
+            <Span
+              key={tokens.length}
+              fontFamily={DEFAULT_FONT_FAMILY}
+              fill={isDark ? "#C084FC" : "#7E22CE"}
+              href={formatFigmaHyperlink(imageUrl)}
+            >
+              {"🌄 " + (altText || "Image")}
+            </Span>
+          );
+          i = endParenIdx + 1;
+          continue;
+        }
+      }
+    }
+
+    // Hyperlink check: [text](url)
+    if (str[i] === '[') {
+      pushText();
+      const endBracketIdx = str.indexOf(']', i + 1);
+      if (endBracketIdx !== -1 && str[endBracketIdx + 1] === '(') {
+        const endParenIdx = str.indexOf(')', endBracketIdx + 2);
+        if (endParenIdx !== -1) {
+          const linkText = str.substring(i + 1, endBracketIdx);
+          const linkUrl = str.substring(endBracketIdx + 2, endParenIdx);
+          tokens.push(
+            <Span
+              key={tokens.length}
+              fontFamily={DEFAULT_FONT_FAMILY}
+              fill={isDark ? "#60A5FA" : "#1D4ED8"}
+              href={formatFigmaHyperlink(linkUrl)}
+            >
+              {"🔗 " + (linkText || linkUrl)}
+          </Span>
+          );
+          i = endParenIdx + 1;
+          continue;
+        }
+      }
     }
 
     // Inline code (fenced with ` )
@@ -226,7 +290,7 @@ function splitTableLine(line: string): string[] {
 }
 
 // Helper to chunk markdown lines into block structure
-function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
+function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark", onToggleTodo?: (idx: number) => void) {
   const { AutoLayout, Text } = figma.widget;
   const isDark = theme === "dark";
   const styles = THEMES[theme];
@@ -239,6 +303,9 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
 
   let inTable = false;
   let tableRows: string[][] = [];
+
+  let inQuote = false;
+  let quoteLines: string[] = [];
 
   let listIndex = 1;
 
@@ -316,6 +383,34 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
     }
   };
 
+  const flushQuote = (idxKey: string) => {
+    if (quoteLines.length > 0) {
+      const quoteText = quoteLines.join("\n");
+      quoteLines = [];
+      pushBlock(
+        <AutoLayout
+          key={`quote-${idxKey}`}
+          direction="horizontal"
+          width="fill-parent"
+          fill={styles.quoteBg}
+          padding={{ top: 6, bottom: 6, left: 8, right: 8 }}
+          cornerRadius={4}
+        >
+          <Text
+            width="fill-parent"
+            fontFamily={DEFAULT_FONT_FAMILY}
+            fontSize={14}
+            lineHeight={20}
+            italic={true}
+            fill={styles.muted}
+          >
+            {parseInlineSpans(quoteText, isDark, styles.muted)}
+          </Text>
+        </AutoLayout>
+      );
+    }
+  };
+
   for (let idx = 0; idx < lines.length; idx++) {
     const origLine = lines[idx];
     const line = origLine.trim();
@@ -381,6 +476,21 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
           continue;
         }
       }
+    }
+
+    // 2.5 Blockquote Parsing & Flushing
+    if (inQuote) {
+      if (line.startsWith(">")) {
+        quoteLines.push(line.substring(1).trim());
+        continue;
+      } else {
+        inQuote = false;
+        flushQuote(`end-${idx}`);
+      }
+    } else if (line.startsWith(">")) {
+      inQuote = true;
+      quoteLines = [line.substring(1).trim()];
+      continue;
     }
 
     if (line === "") {
@@ -474,29 +584,53 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         </Text>
       );
     }
-    // 4. Blockquote (> )
-    else if (line.startsWith(">")) {
-      const quoteText = line.substring(1).trim();
-      pushBlock(
-        <AutoLayout
-          key={`quote-${idx}`}
-          direction="horizontal"
-          width="fill-parent"
-          fill={styles.quoteBg}
-          padding={{ left: 16, top: 4, bottom: 4, right: 12 }}
-        >
-          <Text
+    // 4. Blockquote logic removed and handled above in block-based parser
+    // 4.5 Todo List Items (- [ ] or - [x])
+    else if (/^[-*]\s+\[([ xX])\](?:\s+(.*))?/.test(line)) {
+      const match = line.match(/^[-*]\s+\[([ xX])\](?:\s+(.*))?/);
+      if (match) {
+        const isChecked = match[1].toLowerCase() === "x";
+        const itemText = match[2] || "";
+        const emoji = isChecked ? "✅" : "☑️";
+        const spans = parseInlineSpans(itemText, isDark, styles.muted);
+        pushBlock(
+          <AutoLayout
+            key={`todo-${idx}`}
+            direction="horizontal"
             width="fill-parent"
-            fontFamily={DEFAULT_FONT_FAMILY}
-            fontSize={14}
-            lineHeight={20}
-            italic={true}
-            fill={styles.muted}
+            spacing={8}
+            padding={0}
+            cornerRadius={4}
+            hoverStyle={{
+              fill: isDark ? { r: 1, g: 1, b: 1, a: 0.05 } : { r: 0, g: 0, b: 0, a: 0.05 }
+            }}
+            onClick={() => {
+              if (onToggleTodo) {
+                onToggleTodo(idx);
+              }
+            }}
           >
-            {parseInlineSpans(quoteText, isDark, styles.muted)}
-          </Text>
-        </AutoLayout>
-      );
+            <Text
+              fontFamily={DEFAULT_FONT_FAMILY}
+              fontSize={14}
+              lineHeight={20}
+              width={16}
+              horizontalAlignText="center"
+            >
+              {emoji}
+            </Text>
+            <Text
+              width="fill-parent"
+              fontFamily={DEFAULT_FONT_FAMILY}
+              fontSize={14}
+              lineHeight={20}
+              fill={styles.muted}
+            >
+              {spans}
+            </Text>
+          </AutoLayout>
+        );
+      }
     }
     // 5. Unordered List Items (- or * )
     else if (line.startsWith("- ") || line.startsWith("* ")) {
@@ -578,6 +712,11 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
   // If the document ends while still in a table, flush it
   if (inTable && tableRows.length > 0) {
     flushTable("end-doc");
+  }
+
+  // If the document ends while still in a quote block, flush it
+  if (inQuote && quoteLines.length > 0) {
+    flushQuote("end-doc");
   }
 
   return blocks;
@@ -674,6 +813,20 @@ function Widget() {
     }
   );
 
+  const handleToggleTodo = (lineIdx: number) => {
+    const lines = markdown.split("\n");
+    if (lineIdx >= 0 && lineIdx < lines.length) {
+      const line = lines[lineIdx];
+      const match = line.match(/^([-*]\s+\[)([ xX])(\](?:\s+.*)?)/);
+      if (match) {
+        const isChecked = match[2].toLowerCase() === "x";
+        const newChar = isChecked ? " " : "x";
+        lines[lineIdx] = match[1] + newChar + match[3];
+        setMarkdown(lines.join("\n"));
+      }
+    }
+  };
+
   return (
     <AutoLayout
       direction="vertical"
@@ -682,10 +835,10 @@ function Widget() {
       stroke={styles.stroke}
       strokeWidth={1}
       cornerRadius={16}
-      spacing={16}
+      spacing={12}
       width={widgetWidth}
     >
-      {renderMarkdownToFigma(markdown, isDark ? "dark" : "light")}
+      {renderMarkdownToFigma(markdown, isDark ? "dark" : "light", handleToggleTodo)}
     </AutoLayout>
   );
 }

@@ -10,9 +10,9 @@
       text: "#1F2937",
       muted: "#4B5563",
       accent: "#3B82F6",
-      codeBg: "#F3F4F6",
-      quoteBg: "#F9FAFB",
-      tableHeaderBg: "#F3F4F6"
+      codeBg: "#F5FAFF",
+      quoteBg: "#F9F9F9",
+      tableHeaderBg: "#F5FAFF"
     },
     dark: {
       bg: "#0F121C",
@@ -48,6 +48,20 @@ This is a beautiful, light-default **Figma Markdown** widget.
 ---
 
 *Select this note to open the edit panel and toggle themes from the bottom-left property menu!*`;
+  function formatFigmaHyperlink(url) {
+    const trimmed = url.trim();
+    if (!trimmed)
+      return void 0;
+    let finalUrl = trimmed;
+    if (!/^https?:\/\//i.test(trimmed) && !/^mailto:/i.test(trimmed)) {
+      finalUrl = "https://" + trimmed;
+    }
+    try {
+      return encodeURI(finalUrl);
+    } catch (_e) {
+      return void 0;
+    }
+  }
   function parseInlineSpans(str, isDark, defaultColor) {
     const { Span } = figma.widget;
     const tokens = [];
@@ -64,6 +78,56 @@ This is a beautiful, light-default **Figma Markdown** widget.
         currentText += str[i + 1];
         i += 2;
         continue;
+      }
+      if (str[i] === "!" && str[i + 1] === "[") {
+        pushText();
+        const endBracketIdx = str.indexOf("]", i + 2);
+        if (endBracketIdx !== -1 && str[endBracketIdx + 1] === "(") {
+          const endParenIdx = str.indexOf(")", endBracketIdx + 2);
+          if (endParenIdx !== -1) {
+            const altText = str.substring(i + 2, endBracketIdx);
+            const imageUrl = str.substring(endBracketIdx + 2, endParenIdx);
+            tokens.push(
+              /* @__PURE__ */ figma.widget.h(
+                Span,
+                {
+                  key: tokens.length,
+                  fontFamily: DEFAULT_FONT_FAMILY,
+                  fill: isDark ? "#C084FC" : "#7E22CE",
+                  href: formatFigmaHyperlink(imageUrl)
+                },
+                "\u{1F304} " + (altText || "Image")
+              )
+            );
+            i = endParenIdx + 1;
+            continue;
+          }
+        }
+      }
+      if (str[i] === "[") {
+        pushText();
+        const endBracketIdx = str.indexOf("]", i + 1);
+        if (endBracketIdx !== -1 && str[endBracketIdx + 1] === "(") {
+          const endParenIdx = str.indexOf(")", endBracketIdx + 2);
+          if (endParenIdx !== -1) {
+            const linkText = str.substring(i + 1, endBracketIdx);
+            const linkUrl = str.substring(endBracketIdx + 2, endParenIdx);
+            tokens.push(
+              /* @__PURE__ */ figma.widget.h(
+                Span,
+                {
+                  key: tokens.length,
+                  fontFamily: DEFAULT_FONT_FAMILY,
+                  fill: isDark ? "#60A5FA" : "#1D4ED8",
+                  href: formatFigmaHyperlink(linkUrl)
+                },
+                "\u{1F517} " + (linkText || linkUrl)
+              )
+            );
+            i = endParenIdx + 1;
+            continue;
+          }
+        }
       }
       if (str[i] === "`") {
         pushText();
@@ -206,7 +270,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
     const parts = processed.split("|");
     return parts.map((c) => c.trim().replace(new RegExp(placeholder, "g"), "|"));
   }
-  function renderMarkdownToFigma(markdownText, theme) {
+  function renderMarkdownToFigma(markdownText, theme, onToggleTodo) {
     const { AutoLayout, Text } = figma.widget;
     const isDark = theme === "dark";
     const styles = THEMES[theme];
@@ -216,6 +280,8 @@ This is a beautiful, light-default **Figma Markdown** widget.
     let codeBlockLines = [];
     let inTable = false;
     let tableRows = [];
+    let inQuote = false;
+    let quoteLines = [];
     let listIndex = 1;
     const pushBlock = (block) => {
       blocks.push(block);
@@ -293,6 +359,37 @@ This is a beautiful, light-default **Figma Markdown** widget.
         );
       }
     };
+    const flushQuote = (idxKey) => {
+      if (quoteLines.length > 0) {
+        const quoteText = quoteLines.join("\n");
+        quoteLines = [];
+        pushBlock(
+          /* @__PURE__ */ figma.widget.h(
+            AutoLayout,
+            {
+              key: `quote-${idxKey}`,
+              direction: "horizontal",
+              width: "fill-parent",
+              fill: styles.quoteBg,
+              padding: { top: 6, bottom: 6, left: 8, right: 8 },
+              cornerRadius: 4
+            },
+            /* @__PURE__ */ figma.widget.h(
+              Text,
+              {
+                width: "fill-parent",
+                fontFamily: DEFAULT_FONT_FAMILY,
+                fontSize: 14,
+                lineHeight: 20,
+                italic: true,
+                fill: styles.muted
+              },
+              parseInlineSpans(quoteText, isDark, styles.muted)
+            )
+          )
+        );
+      }
+    };
     for (let idx = 0; idx < lines.length; idx++) {
       const origLine = lines[idx];
       const line = origLine.trim();
@@ -354,6 +451,19 @@ This is a beautiful, light-default **Figma Markdown** widget.
             continue;
           }
         }
+      }
+      if (inQuote) {
+        if (line.startsWith(">")) {
+          quoteLines.push(line.substring(1).trim());
+          continue;
+        } else {
+          inQuote = false;
+          flushQuote(`end-${idx}`);
+        }
+      } else if (line.startsWith(">")) {
+        inQuote = true;
+        quoteLines = [line.substring(1).trim()];
+        continue;
       }
       if (line === "") {
         continue;
@@ -454,32 +564,57 @@ This is a beautiful, light-default **Figma Markdown** widget.
             parseInlineSpans(line.substring(7), isDark, styles.text)
           )
         );
-      } else if (line.startsWith(">")) {
-        const quoteText = line.substring(1).trim();
-        pushBlock(
-          /* @__PURE__ */ figma.widget.h(
-            AutoLayout,
-            {
-              key: `quote-${idx}`,
-              direction: "horizontal",
-              width: "fill-parent",
-              fill: styles.quoteBg,
-              padding: { left: 16, top: 4, bottom: 4, right: 12 }
-            },
+      } else if (/^[-*]\s+\[([ xX])\](?:\s+(.*))?/.test(line)) {
+        const match = line.match(/^[-*]\s+\[([ xX])\](?:\s+(.*))?/);
+        if (match) {
+          const isChecked = match[1].toLowerCase() === "x";
+          const itemText = match[2] || "";
+          const emoji = isChecked ? "\u2705" : "\u2611\uFE0F";
+          const spans = parseInlineSpans(itemText, isDark, styles.muted);
+          pushBlock(
             /* @__PURE__ */ figma.widget.h(
-              Text,
+              AutoLayout,
               {
+                key: `todo-${idx}`,
+                direction: "horizontal",
                 width: "fill-parent",
-                fontFamily: DEFAULT_FONT_FAMILY,
-                fontSize: 14,
-                lineHeight: 20,
-                italic: true,
-                fill: styles.muted
+                spacing: 8,
+                padding: 0,
+                cornerRadius: 4,
+                hoverStyle: {
+                  fill: isDark ? { r: 1, g: 1, b: 1, a: 0.05 } : { r: 0, g: 0, b: 0, a: 0.05 }
+                },
+                onClick: () => {
+                  if (onToggleTodo) {
+                    onToggleTodo(idx);
+                  }
+                }
               },
-              parseInlineSpans(quoteText, isDark, styles.muted)
+              /* @__PURE__ */ figma.widget.h(
+                Text,
+                {
+                  fontFamily: DEFAULT_FONT_FAMILY,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  width: 16,
+                  horizontalAlignText: "center"
+                },
+                emoji
+              ),
+              /* @__PURE__ */ figma.widget.h(
+                Text,
+                {
+                  width: "fill-parent",
+                  fontFamily: DEFAULT_FONT_FAMILY,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  fill: styles.muted
+                },
+                spans
+              )
             )
-          )
-        );
+          );
+        }
       } else if (line.startsWith("- ") || line.startsWith("* ")) {
         const itemText = line.substring(2);
         pushBlock(
@@ -565,6 +700,9 @@ This is a beautiful, light-default **Figma Markdown** widget.
     if (inTable && tableRows.length > 0) {
       flushTable("end-doc");
     }
+    if (inQuote && quoteLines.length > 0) {
+      flushQuote("end-doc");
+    }
     return blocks;
   }
   function Widget() {
@@ -644,6 +782,19 @@ This is a beautiful, light-default **Figma Markdown** widget.
         }
       }
     );
+    const handleToggleTodo = (lineIdx) => {
+      const lines = markdown.split("\n");
+      if (lineIdx >= 0 && lineIdx < lines.length) {
+        const line = lines[lineIdx];
+        const match = line.match(/^([-*]\s+\[)([ xX])(\](?:\s+.*)?)/);
+        if (match) {
+          const isChecked = match[2].toLowerCase() === "x";
+          const newChar = isChecked ? " " : "x";
+          lines[lineIdx] = match[1] + newChar + match[3];
+          setMarkdown(lines.join("\n"));
+        }
+      }
+    };
     return /* @__PURE__ */ figma.widget.h(
       AutoLayout,
       {
@@ -653,10 +804,10 @@ This is a beautiful, light-default **Figma Markdown** widget.
         stroke: styles.stroke,
         strokeWidth: 1,
         cornerRadius: 16,
-        spacing: 16,
+        spacing: 12,
         width: widgetWidth
       },
-      renderMarkdownToFigma(markdown, isDark ? "dark" : "light")
+      renderMarkdownToFigma(markdown, isDark ? "dark" : "light", handleToggleTodo)
     );
   }
   figma.widget.register(Widget);
