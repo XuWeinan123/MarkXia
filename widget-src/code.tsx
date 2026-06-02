@@ -56,9 +56,9 @@ This is a beautiful, light-default **Figma Markdown** widget.
 
 *Select this note to open the edit panel and toggle themes from the bottom-left property menu!*`;
 
-function formatFigmaHyperlink(url: string): string | undefined {
+function formatFigmaHyperlink(url: string): string | null {
   const trimmed = url.trim();
-  if (!trimmed) return undefined;
+  if (!trimmed) return null;
   let finalUrl = trimmed;
   if (!/^https?:\/\//i.test(trimmed) && !/^mailto:/i.test(trimmed)) {
     finalUrl = "https://" + trimmed;
@@ -66,7 +66,7 @@ function formatFigmaHyperlink(url: string): string | undefined {
   try {
     return encodeURI(finalUrl);
   } catch (_e) {
-    return undefined;
+    return null;
   }
 }
 
@@ -107,7 +107,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
               key={tokens.length}
               fontFamily={DEFAULT_FONT_FAMILY}
               fill={isDark ? "#C084FC" : "#7E22CE"}
-              href={formatFigmaHyperlink(imageUrl)}
+              href={formatFigmaHyperlink(imageUrl) as any}
             >
               {"🌄 " + (altText || "Image")}
             </Span>
@@ -132,7 +132,7 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
               key={tokens.length}
               fontFamily={DEFAULT_FONT_FAMILY}
               fill={isDark ? "#60A5FA" : "#1D4ED8"}
-              href={formatFigmaHyperlink(linkUrl)}
+              href={formatFigmaHyperlink(linkUrl) as any}
             >
               {"🔗 " + (linkText || linkUrl)}
           </Span>

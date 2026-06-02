@@ -51,7 +51,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
   function formatFigmaHyperlink(url) {
     const trimmed = url.trim();
     if (!trimmed)
-      return void 0;
+      return null;
     let finalUrl = trimmed;
     if (!/^https?:\/\//i.test(trimmed) && !/^mailto:/i.test(trimmed)) {
       finalUrl = "https://" + trimmed;
@@ -59,7 +59,7 @@ This is a beautiful, light-default **Figma Markdown** widget.
     try {
       return encodeURI(finalUrl);
     } catch (_e) {
-      return void 0;
+      return null;
     }
   }
   function parseInlineSpans(str, isDark, defaultColor) {

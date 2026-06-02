@@ -223,7 +223,8 @@
         apply: () => wrapSelection('$', '$', 'math')
       },
       {
-        isMatch: (event) => event.ctrlKey && !event.metaKey && event.shiftKey && !event.altKey && event.code === 'Backquote',
+        isMatch: (event) => event.ctrlKey && !event.metaKey && event.shiftKey && !event.altKey && 
+          (event.code === 'Backquote' || event.key === '~' || event.key === '`'),
         apply: () => wrapSelection('~~', '~~', 'strike')
       },
       {
@@ -267,17 +268,12 @@
       const start = markdownEditor.selectionStart;
       const end = markdownEditor.selectionEnd;
       const selectedText = markdownEditor.value.slice(start, end);
-      const label = selectedText || 'link';
-      const replacement = `[${label}](url)`;
+      const replacement = `[${selectedText}]()`;
 
       replaceEditorRange(start, end, replacement);
 
-      if (selectedText) {
-        const urlStart = start + replacement.length - 4;
-        markdownEditor.setSelectionRange(urlStart, urlStart + 3);
-      } else {
-        markdownEditor.setSelectionRange(start + 1, start + 1 + label.length);
-      }
+      const cursorState = start + selectedText.length + 2;
+      markdownEditor.setSelectionRange(cursorState, cursorState);
     }
 
     function replaceEditorRange(start, end, replacement) {
