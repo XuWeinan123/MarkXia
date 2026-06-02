@@ -193,6 +193,19 @@ This is a beautiful, light-default **Figma Markdown** widget.
     pushText();
     return tokens;
   }
+  function splitTableLine(line) {
+    let trimmed = line.trim();
+    if (trimmed.startsWith("|")) {
+      trimmed = trimmed.substring(1);
+    }
+    if (trimmed.endsWith("|")) {
+      trimmed = trimmed.substring(0, trimmed.length - 1);
+    }
+    const placeholder = "___ESC_PIPE___";
+    const processed = trimmed.replace(/\\\|/g, placeholder);
+    const parts = processed.split("|");
+    return parts.map((c) => c.trim().replace(new RegExp(placeholder, "g"), "|"));
+  }
   function renderMarkdownToFigma(markdownText, theme) {
     const { AutoLayout, Text } = figma.widget;
     const isDark = theme === "dark";
@@ -206,6 +219,79 @@ This is a beautiful, light-default **Figma Markdown** widget.
     let listIndex = 1;
     const pushBlock = (block) => {
       blocks.push(block);
+    };
+    const flushTable = (idxKey) => {
+      if (tableRows.length > 0) {
+        const rowsToRender = [...tableRows];
+        tableRows = [];
+        const maxCols = Math.max(...rowsToRender.map((r) => r.length));
+        pushBlock(
+          /* @__PURE__ */ figma.widget.h(
+            AutoLayout,
+            {
+              key: `table-${idxKey}`,
+              direction: "vertical",
+              width: "fill-parent",
+              stroke: styles.stroke,
+              strokeWidth: 1,
+              cornerRadius: 8,
+              padding: 0
+            },
+            rowsToRender.map((row, rIdx) => {
+              const isHeader = rIdx === 0;
+              const paddedRow = [...row];
+              while (paddedRow.length < maxCols) {
+                paddedRow.push("");
+              }
+              return /* @__PURE__ */ figma.widget.h(
+                AutoLayout,
+                {
+                  key: `row-${rIdx}`,
+                  direction: "vertical",
+                  width: "fill-parent",
+                  fill: isHeader ? styles.tableHeaderBg : styles.bg,
+                  padding: 0
+                },
+                /* @__PURE__ */ figma.widget.h(
+                  AutoLayout,
+                  {
+                    direction: "horizontal",
+                    width: "fill-parent",
+                    padding: { top: 8, bottom: 8, left: 12, right: 12 }
+                  },
+                  paddedRow.map((cell, cIdx) => /* @__PURE__ */ figma.widget.h(
+                    AutoLayout,
+                    {
+                      key: `cell-${cIdx}`,
+                      width: "fill-parent",
+                      padding: 0
+                    },
+                    /* @__PURE__ */ figma.widget.h(
+                      Text,
+                      {
+                        width: "fill-parent",
+                        fontFamily: DEFAULT_FONT_FAMILY,
+                        fontSize: 13,
+                        fontWeight: isHeader ? "bold" : "normal",
+                        fill: isHeader ? styles.text : styles.muted
+                      },
+                      parseInlineSpans(cell, isDark, isHeader ? styles.text : styles.muted)
+                    )
+                  ))
+                ),
+                rIdx < rowsToRender.length - 1 && /* @__PURE__ */ figma.widget.h(
+                  AutoLayout,
+                  {
+                    width: "fill-parent",
+                    height: 1,
+                    fill: styles.stroke
+                  }
+                )
+              );
+            })
+          )
+        );
+      }
     };
     for (let idx = 0; idx < lines.length; idx++) {
       const origLine = lines[idx];
@@ -247,81 +333,26 @@ This is a beautiful, light-default **Figma Markdown** widget.
         codeBlockLines.push(origLine);
         continue;
       }
-      if (line.startsWith("|")) {
-        inTable = true;
-        const cells = line.split("|").map((c) => c.trim()).filter((_c, i, arr) => i > 0 && i < arr.length - 1);
-        const isSeparator = cells.every((c) => c.startsWith("-") || c === "");
-        if (!isSeparator) {
+      if (inTable) {
+        if (line.includes("|")) {
+          const cells = splitTableLine(line);
           tableRows.push(cells);
+          continue;
+        } else {
+          inTable = false;
+          flushTable(`end-${idx}`);
         }
-        continue;
-      } else if (inTable) {
-        inTable = false;
-        if (tableRows.length > 0) {
-          const rowsToRender = [...tableRows];
-          tableRows = [];
-          pushBlock(
-            /* @__PURE__ */ figma.widget.h(
-              AutoLayout,
-              {
-                key: `table-${idx}`,
-                direction: "vertical",
-                width: "fill-parent",
-                stroke: styles.stroke,
-                strokeWidth: 1,
-                cornerRadius: 8,
-                padding: 0
-              },
-              rowsToRender.map((row, rIdx) => {
-                const isHeader = rIdx === 0;
-                return /* @__PURE__ */ figma.widget.h(
-                  AutoLayout,
-                  {
-                    key: `row-${rIdx}`,
-                    direction: "vertical",
-                    width: "fill-parent",
-                    fill: isHeader ? styles.tableHeaderBg : styles.bg,
-                    padding: 0
-                  },
-                  /* @__PURE__ */ figma.widget.h(
-                    AutoLayout,
-                    {
-                      direction: "horizontal",
-                      width: "fill-parent",
-                      padding: { top: 8, bottom: 8, left: 12, right: 12 }
-                    },
-                    row.map((cell, cIdx) => /* @__PURE__ */ figma.widget.h(
-                      AutoLayout,
-                      {
-                        key: `cell-${cIdx}`,
-                        width: "fill-parent",
-                        padding: 0
-                      },
-                      /* @__PURE__ */ figma.widget.h(
-                        Text,
-                        {
-                          width: "fill-parent",
-                          fontFamily: DEFAULT_FONT_FAMILY,
-                          fontSize: 13,
-                          fontWeight: isHeader ? "bold" : "normal",
-                          fill: isHeader ? styles.text : styles.muted
-                        },
-                        parseInlineSpans(cell, isDark, isHeader ? styles.text : styles.muted)
-                      )
-                    ))
-                  ),
-                  /* @__PURE__ */ figma.widget.h(
-                    AutoLayout,
-                    {
-                      width: "fill-parent",
-                      height: 1,
-                      fill: styles.stroke
-                    }
-                  )
-                );
-              })
-            )
-          );
+      } else if (line.includes("|")) {
+        const currentCells = splitTableLine(line);
+        const nextLine = idx + 1 < lines.length ? lines[idx + 1].trim() : "";
+        if (nextLine.includes("|")) {
+          const nextCells = splitTableLine(nextLine);
+          if (nextCells.length > 0 && nextCells.every((c) => /^\s*:?-+:?\s*$/.test(c))) {
+            inTable = true;
+            tableRows = [currentCells];
+            idx++;
+            continue;
+          }
         }
       }
       if (line === "") {
@@ -530,6 +561,9 @@ This is a beautiful, light-default **Figma Markdown** widget.
           )
         );
       }
+    }
+    if (inTable && tableRows.length > 0) {
+      flushTable("end-doc");
     }
     return blocks;
   }

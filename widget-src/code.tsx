@@ -209,6 +209,22 @@ function parseInlineSpans(str: string, isDark: boolean, defaultColor: string) {
   return tokens;
 }
 
+// Helper to split a table line into cells, handling optional leading and trailing pipes
+function splitTableLine(line: string): string[] {
+  let trimmed = line.trim();
+  if (trimmed.startsWith("|")) {
+    trimmed = trimmed.substring(1);
+  }
+  if (trimmed.endsWith("|")) {
+    trimmed = trimmed.substring(0, trimmed.length - 1);
+  }
+  // Temporarily replace escaped pipes with a placeholder to avoid incorrect splitting
+  const placeholder = "___ESC_PIPE___";
+  const processed = trimmed.replace(/\\\|/g, placeholder);
+  const parts = processed.split("|");
+  return parts.map(c => c.trim().replace(new RegExp(placeholder, "g"), "|"));
+}
+
 // Helper to chunk markdown lines into block structure
 function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
   const { AutoLayout, Text } = figma.widget;
@@ -228,6 +244,76 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
 
   const pushBlock = (block: any) => {
     blocks.push(block);
+  };
+
+  const flushTable = (idxKey: string) => {
+    if (tableRows.length > 0) {
+      const rowsToRender = [...tableRows];
+      tableRows = [];
+
+      const maxCols = Math.max(...rowsToRender.map(r => r.length));
+
+      pushBlock(
+        <AutoLayout
+          key={`table-${idxKey}`}
+          direction="vertical"
+          width="fill-parent"
+          stroke={styles.stroke}
+          strokeWidth={1}
+          cornerRadius={8}
+          padding={0}
+        >
+          {rowsToRender.map((row, rIdx) => {
+            const isHeader = rIdx === 0;
+            const paddedRow = [...row];
+            while (paddedRow.length < maxCols) {
+              paddedRow.push("");
+            }
+
+            return (
+              <AutoLayout
+                key={`row-${rIdx}`}
+                direction="vertical"
+                width="fill-parent"
+                fill={isHeader ? styles.tableHeaderBg : styles.bg}
+                padding={0}
+              >
+                <AutoLayout
+                  direction="horizontal"
+                  width="fill-parent"
+                  padding={{ top: 8, bottom: 8, left: 12, right: 12 }}
+                >
+                  {paddedRow.map((cell, cIdx) => (
+                    <AutoLayout
+                      key={`cell-${cIdx}`}
+                      width="fill-parent"
+                      padding={0}
+                    >
+                      <Text
+                        width="fill-parent"
+                        fontFamily={DEFAULT_FONT_FAMILY}
+                        fontSize={13}
+                        fontWeight={isHeader ? "bold" : "normal"}
+                        fill={isHeader ? styles.text : styles.muted}
+                      >
+                        {parseInlineSpans(cell, isDark, isHeader ? styles.text : styles.muted)}
+                      </Text>
+                    </AutoLayout>
+                  ))}
+                </AutoLayout>
+                {rIdx < rowsToRender.length - 1 && (
+                  <AutoLayout
+                    width="fill-parent"
+                    height={1}
+                    fill={styles.stroke}
+                  />
+                )}
+              </AutoLayout>
+            );
+          })}
+        </AutoLayout>
+      );
+    }
   };
 
   for (let idx = 0; idx < lines.length; idx++) {
@@ -272,79 +358,28 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
     }
 
     // 2. Table Parsing
-    if (line.startsWith("|")) {
-      inTable = true;
-      // Extract columns
-      const cells = line.split("|")
-        .map(c => c.trim())
-        .filter((_c, i, arr) => i > 0 && i < arr.length - 1);
-
-      // Skip separator rows (e.g. | --- | --- |)
-      const isSeparator = cells.every(c => c.startsWith("-") || c === "");
-      if (!isSeparator) {
+    if (inTable) {
+      if (line.includes("|")) {
+        const cells = splitTableLine(line);
         tableRows.push(cells);
+        continue;
+      } else {
+        // Table ended, render it
+        inTable = false;
+        flushTable(`end-${idx}`);
+        // Do NOT continue: let this line be processed as other blocks
       }
-      continue;
-    } else if (inTable) {
-      // Table ended, render it
-      inTable = false;
-      if (tableRows.length > 0) {
-        const rowsToRender = [...tableRows];
-        tableRows = [];
-
-        pushBlock(
-          <AutoLayout
-            key={`table-${idx}`}
-            direction="vertical"
-            width="fill-parent"
-            stroke={styles.stroke}
-            strokeWidth={1}
-            cornerRadius={8}
-            padding={0}
-          >
-            {rowsToRender.map((row, rIdx) => {
-              const isHeader = rIdx === 0;
-              return (
-                <AutoLayout
-                  key={`row-${rIdx}`}
-                  direction="vertical"
-                  width="fill-parent"
-                  fill={isHeader ? styles.tableHeaderBg : styles.bg}
-                  padding={0}
-                >
-                  <AutoLayout
-                    direction="horizontal"
-                    width="fill-parent"
-                    padding={{ top: 8, bottom: 8, left: 12, right: 12 }}
-                  >
-                    {row.map((cell, cIdx) => (
-                      <AutoLayout
-                        key={`cell-${cIdx}`}
-                        width="fill-parent"
-                        padding={0}
-                      >
-                        <Text
-                          width="fill-parent"
-                          fontFamily={DEFAULT_FONT_FAMILY}
-                          fontSize={13}
-                          fontWeight={isHeader ? "bold" : "normal"}
-                          fill={isHeader ? styles.text : styles.muted}
-                        >
-                          {parseInlineSpans(cell, isDark, isHeader ? styles.text : styles.muted)}
-                        </Text>
-                      </AutoLayout>
-                    ))}
-                  </AutoLayout>
-                  <AutoLayout
-                    width="fill-parent"
-                    height={1}
-                    fill={styles.stroke}
-                  />
-                </AutoLayout>
-              );
-            })}
-          </AutoLayout>
-        );
+    } else if (line.includes("|")) {
+      const currentCells = splitTableLine(line);
+      const nextLine = idx + 1 < lines.length ? lines[idx + 1].trim() : "";
+      if (nextLine.includes("|")) {
+        const nextCells = splitTableLine(nextLine);
+        if (nextCells.length > 0 && nextCells.every(c => /^\s*:?-+:?\s*$/.test(c))) {
+          inTable = true;
+          tableRows = [currentCells];
+          idx++; // Skip separator line
+          continue;
+        }
       }
     }
 
@@ -538,6 +573,11 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark") {
         </Text>
       );
     }
+  }
+
+  // If the document ends while still in a table, flush it
+  if (inTable && tableRows.length > 0) {
+    flushTable("end-doc");
   }
 
   return blocks;
