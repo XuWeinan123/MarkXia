@@ -49,26 +49,26 @@ Markdown Canvas supports a subset of standard Markdown and GitHub Flavored Markd
 | **H1-H6 Headings**          | `# H1`<br>`## H2`<br>`### H3`<br>`#### H4`<br>`##### H5`<br>`###### H6` |       ✅        | Headings render in bold with sizes 24, 22, 20, 18, 16, 15 and auto line height. |
 | **Bold Text**               | `**bold**` or `__bold__`                           |       ✅        | Rendered in bold typeface.                                                                     |
 | **Italic Text**             | `*italic*` or `_italic_`                           |       ✅        | Rendered in italic typeface.                                                                   |
-| **Bold Italic Text**        | `***bold italic***`                                |       ❌        | Will not correctly parse both styles combined.                                                 |
 | **Strikethrough**           | `~~strikethrough~~`                                |       ✅        | Rendered with a line through the text.                                                         |
 | **Underline**               | `<u>underline</u>`                                 |       ✅        | Rendered with an underline.                                                                    |
-| **Highlights**              | `==highlight==`                                    |       ❌        | Renders as raw `==` characters.                                                                |
-| **Superscript & Subscript** | `x^2^`, `H~2~O`                                    |       ❌        | Renders as raw `^` or `~` characters.                                                          |
 | **Plain Paragraphs**        | Standard text                                      |       ✅        | Styled in theme-based muted text color.                                                        |
-| **Line Breaks**             | Trailing spaces or `<br>`                          |       ❌        | Renders as one line or literal HTML `<br>`. Dual carriage returns are required for paragraphs. |
 | **Unordered Lists**         | `- item` or `* item`                               |       ✅        | Rendered with a custom bullet point `•`.                                                       |
 | **Ordered Lists**           | `1. item`                                          |       ✅        | Rendered with auto-incrementing numbers.                                                       |
-| **Nested Lists**            | Indented list items                                |       ❌        | All lines are trimmed, rendering flat list items.                                              |
 | **GFM Task Lists**          | `- [ ] todo`                                       |       ✅        | Renders with checkmark emoji (✅/☑️) in a 16px frame. Interactively toggles via click/hover on canvas. |
-| **Definition Lists**        | `term`<br>`: definition`                           |       ❌        | Renders as standard plain paragraphs.                                                          |
 | **Standard Blockquotes**    | `> quote`                                          |       ✅        | Consecutive blockquotes are merged. Styled with theme quoteBg, padding (v:6 h:8), cornerRadius 4. |
-| **Nested Blockquotes**      | `> > nested`                                       |       ❌        | Flat parsing. Renders as a single quote block with leading `>` characters inside.              |
-| **GFM Alerts**              | `> [!NOTE]`                                        |       ❌        | Renders as a standard blockquote with literal `[!NOTE]` text.                                  |
 | **Inline Code**             | `` `code` ``                                       |       ✅        | Styled with accent colors and padded spacing.                                                  |
 | **Fenced Code Blocks**      | ` ```javascript `                                  |       ✅        | Rendered inside a stylized code block container.                                               |
-| **Syntax Highlighting**     | ` ```python `                                      |       ❌        | Code is displayed as plain, uniform text.                                                      |
 | **Hyperlinks**              | `[text](url)`                                      |       ✅        | Rendered as clickable blue text with a 🔗 prefix. Clicking natively opens absolute URLs.       |
 | **Images**                  | `![alt](url)`                                      |       ✅        | Rendered as clickable purple text with a 🌄 prefix. Clicking natively opens image URLs.        |
+| **Bold Italic Text**        | `***bold italic***`                                |       ❌        | Will not correctly parse both styles combined.                                                 |
+| **Highlights**              | `==highlight==`                                    |       ❌        | Renders as raw `==` characters.                                                                |
+| **Superscript & Subscript** | `x^2^`, `H~2~O`                                    |       ❌        | Renders as raw `^` or `~` characters.                                                          |
+| **Line Breaks**             | Trailing spaces or `<br>`                          |       ❌        | Renders as one line or literal HTML `<br>`. Dual carriage returns are required for paragraphs. |
+| **Nested Lists**            | Indented list items                                |       ❌        | All lines are trimmed, rendering flat list items.                                              |
+| **Definition Lists**        | `term`<br>`: definition`                           |       ❌        | Renders as standard plain paragraphs.                                                          |
+| **Nested Blockquotes**      | `> > nested`                                       |       ❌        | Flat parsing. Renders as a single quote block with leading `>` characters inside.              |
+| **GFM Alerts**              | `> [!NOTE]`                                        |       ❌        | Renders as a standard blockquote with literal `[!NOTE]` text.                                  |
+| **Syntax Highlighting**     | ` ```python `                                      |       ❌        | Code is displayed as plain, uniform text.                                                      |
 | **LaTeX Equations**         | `$E=mc^2$` or `$$...$$`                            |       ❌        | Renders as raw LaTeX code.                                                                     |
 | **Footnotes**               | `[^1]`                                             |       ❌        | Renders as literal text.                                                                       |
 | **HTML Details**            | `<details>`                                        |       ❌        | Renders literal HTML.                                                                          |
