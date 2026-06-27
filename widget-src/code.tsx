@@ -4,7 +4,7 @@ declare const figma: PluginAPI;
 declare const __html__: string;
 
 // Simplified Markdown Canvas Markdown Note Widget for Figma & FigJam
-const BUILD_ID = "markdown-canvas-widget-2026-05-29-widget-props-fix-1";
+const BUILD_ID = "markdown-canvas-widget-2026-06-17-html-comment-color-1";
 console.log(`[Markdown Canvas] loaded ${BUILD_ID}`);
 
 const THEMES = {
@@ -498,8 +498,23 @@ function renderMarkdownToFigma(markdownText: string, theme: "light" | "dark", on
       continue;
     }
 
+    // 2.75 HTML comment line (<!--TODO-->)
+    if (/^<!--.*-->$/.test(line)) {
+      pushBlock(
+        <Text
+          key={`html-comment-${idx}`}
+          width="fill-parent"
+          fontFamily={DEFAULT_FONT_FAMILY}
+          fontSize={14}
+          lineHeight={20}
+          fill={isDark ? "#4ADE80" : "#16A34A"}
+        >
+          {line}
+        </Text>
+      );
+    }
     // 3. Headings (# H1 to ###### H6)
-    if (line.startsWith("# ")) {
+    else if (line.startsWith("# ")) {
       pushBlock(
         <Text
           key={`h1-${idx}`}

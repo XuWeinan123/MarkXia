@@ -1,7 +1,7 @@
 "use strict";
 (() => {
   // widget-src/code.tsx
-  var BUILD_ID = "markdown-canvas-widget-2026-05-29-widget-props-fix-1";
+  var BUILD_ID = "markdown-canvas-widget-2026-06-17-html-comment-color-1";
   console.log(`[Markdown Canvas] loaded ${BUILD_ID}`);
   var THEMES = {
     light: {
@@ -468,7 +468,22 @@ This is a beautiful, light-default **Figma Markdown** widget.
       if (line === "") {
         continue;
       }
-      if (line.startsWith("# ")) {
+      if (/^<!--.*-->$/.test(line)) {
+        pushBlock(
+          /* @__PURE__ */ figma.widget.h(
+            Text,
+            {
+              key: `html-comment-${idx}`,
+              width: "fill-parent",
+              fontFamily: DEFAULT_FONT_FAMILY,
+              fontSize: 14,
+              lineHeight: 20,
+              fill: isDark ? "#4ADE80" : "#16A34A"
+            },
+            line
+          )
+        );
+      } else if (line.startsWith("# ")) {
         pushBlock(
           /* @__PURE__ */ figma.widget.h(
             Text,
